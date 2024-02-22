@@ -12,7 +12,8 @@ def create_user():
     user = models.User(
         request.json.get('name'),
         request.json.get('nickname'),
-        password
+        password,
+        request.json.get('email')
     )
 
     save, err = service.save_user(user)
@@ -29,6 +30,7 @@ def create_user():
     }), 201
 
 def delete_user(nickname):
+    token = request.headers.get('Authorization')
 
     remove, err = repository.remove_user(nickname)
 
@@ -89,7 +91,8 @@ def login():
     user = models.User(
         None,
         request.json.get('nickname'),
-        password
+        password,
+        None
         )
     
     login, err = repository.verify_user(user)
