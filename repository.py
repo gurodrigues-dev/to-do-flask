@@ -14,8 +14,8 @@ def save_user(User: models.User):
         if result is not None:
             return False, f"Nickname '{User.nickname}' já está em uso"
 
-        query = """INSERT INTO users (name, nickname, password) VALUES (%s, %s, %s)"""
-        cursor.execute(query, (User.name, User.nickname, User.password))
+        query = """INSERT INTO users (name, nickname, password, email) VALUES (%s, %s, %s, %s)"""
+        cursor.execute(query, (User.name, User.nickname, User.password, User.email))
         conn.commit()
         conn.close()
 
