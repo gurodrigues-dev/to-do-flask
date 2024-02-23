@@ -1,3 +1,4 @@
+from http import server
 import models
 import repository
 import utils
@@ -30,9 +31,15 @@ def create_user():
     }), 201
 
 def delete_user(nickname):
-    token = request.headers.get('Authorization')
+    current_user = get_jwt_identity()
+    user, error = service.verify_identity(nickname, current_user)
+    if not user:
+        return jsonify({
+            "message": "Unauthorized",
+            "error": str(error)
+            }), 401
 
-    remove, err = repository.remove_user(nickname)
+    remove, err = service.delete_user(nickname)
 
     if not remove:
         return jsonify({
@@ -46,7 +53,7 @@ def delete_user(nickname):
 
 def get_user(nickname):
 
-    exists, value = repository.get_user(nickname)
+    exists, value = service.get_user(nickname)
     
     if not exists:
         return jsonify({
@@ -65,13 +72,17 @@ def get_user(nickname):
     }), 502
 
 def update_user(nickname):
+    current_user = get_jwt_identity()
+    user, error = service.verify_identity(nickname, current_user)
+    if not user:
+        return jsonify({
+            "message": "Unauthorized",
+            "error": str(error)
+            }), 401
 
     data = request.json
-    if 'password' in data:
-        new_password = utils.criptografar_password(data['password'])
-        data['password'] = new_password
 
-    update, err = repository.update_user(nickname, data)
+    update, err = service.update_user(nickname, data)
 
     if not update:
         return jsonify({
@@ -86,7 +97,7 @@ def update_user(nickname):
 
 def login():
 
-    password = utils.criptografar_password(request.json.get('password'))
+    password = service.criptografar_password(request.json.get('password'))
 
     user = models.User(
         None,
@@ -95,7 +106,7 @@ def login():
         None
         )
     
-    login, err = repository.verify_user(user)
+    login, err = service.verify_user(user)
 
     if not login:
         return jsonify({
