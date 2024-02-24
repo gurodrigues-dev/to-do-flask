@@ -1,3 +1,4 @@
+from genericpath import exists
 import utils
 import models
 import repository
@@ -34,3 +35,25 @@ def update_user(nickname, data):
 def verify_user(user):
     login, err = repository.verify_user(user)
     return login, err
+
+
+def save_task(Task: models.Tasks):
+    save, err = repository.save_task(Task)
+    return save, err
+
+def delete_task(titulo, nickname):
+    remove, err = repository.remove_task(titulo, nickname)
+    return remove, err
+
+def get_task(titulo, nickname):
+    exist, value = repository.get_task(titulo, nickname)
+    return exist, value
+
+def get_tasks(nickname):
+    exist, value = repository.get_tasks(nickname)
+    return exist, value
+
+def update_task(nickname, titulo, data):
+    update, err = repository.update_task(nickname, titulo, data)
+    return update, err
+

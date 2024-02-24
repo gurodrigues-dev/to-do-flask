@@ -124,3 +124,116 @@ def login():
 def protected():
     current_user = get_jwt_identity()
     return jsonify(logged_in_as=current_user), 200
+
+def create_task(nickname):
+    current_user = get_jwt_identity()
+    user, error = service.verify_identity(nickname, current_user)
+    if not user:
+        return jsonify({
+            "message": "Unauthorized",
+            "error": str(error)
+            }), 401
+
+    task = models.Tasks(
+        request.json.get('titulo'),
+        request.json.get('descricao'),
+        request.json.get('status'),
+        nickname
+    )
+
+    save, err = service.save_task(task)
+
+    if not save:
+        return jsonify({
+            "message": "Erro ao criar task",
+            "error": str(err)
+        }), 502
+
+    return jsonify({
+
+        "message": "Task criado com sucesso",
+    }), 201
+
+def delete_task(nickname, titulo):
+    current_user = get_jwt_identity()
+    user, error = service.verify_identity(nickname, current_user)
+    if not user:
+        return jsonify({
+            "message": "Unauthorized",
+            "error": str(error)
+            }), 401
+
+    remove, err = service.delete_task(titulo, nickname)
+
+    if not remove:
+        return jsonify({
+            "message": "erro ao deletar task",
+            "error": str(err)
+        }), 502
+
+    return jsonify({
+        "message": "task deletada com sucesso",
+    }), 201
+
+def get_task(nickname, titulo):
+
+    exists, value = service.get_task(titulo, nickname)
+    
+    if not exists:
+        return jsonify({
+            "message": "Task não encontrada",
+        }), 404
+
+    elif exists:
+        return jsonify({
+            "message": "Task encontrada",
+            "user": value
+        }), 200
+    
+    return jsonify({
+        "message": "erro ao encontrar task",
+        "error": value
+    }), 502
+
+def get_tasks(nickname):
+
+    exists, value = service.get_tasks(nickname)
+    
+    if not exists:
+        return jsonify({
+            "message": "Tasks não encontradas",
+        }), 404
+
+    elif exists:
+        return jsonify({
+            "message": "Tasks encontradas",
+            "user": value
+        }), 200
+    
+    return jsonify({
+        "message": "erro ao encontrar tasks",
+        "error": value
+    }), 502
+
+def update_task(nickname, titulo):
+    current_user = get_jwt_identity()
+    user, error = service.verify_identity(nickname, current_user)
+    if not user:
+        return jsonify({
+            "message": "Unauthorized",
+            "error": str(error)
+            }), 401
+
+    data = request.json
+
+    update, err = service.update_task(nickname, titulo, data)
+
+    if not update:
+        return jsonify({
+            "message": "erro ao atualizar task",
+            "error": str(err)
+        }), 502
+
+    return jsonify({
+        "message": "task atualizada com sucesso",
+    }), 201
