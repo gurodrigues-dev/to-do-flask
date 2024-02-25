@@ -110,3 +110,106 @@ def verify_user(User: models.User):
 
     except Exception as err:
         return False, err
+
+
+def save_task(Task: models.Tasks):
+    try:
+        conn = utils.connect_database()
+        cursor = conn.cursor()
+
+        query = """INSERT INTO tasks (titulo, descricao, status, nickname) VALUES (%s, %s, %s, %s)"""
+        cursor.execute(query, (Task.titulo, Task.descricao, Task.status, Task.nickname))
+        conn.commit()
+        conn.close()
+
+        return True, None
+
+    except Exception as err:
+        return False, err
+
+def remove_task(titulo, nickname):
+
+    try:
+
+        exist, err = get_task(titulo, nickname)
+        if not exist:
+            return False, "Task não encontrada"
+
+        conn = utils.connect_database()
+        cursor = conn.cursor()
+        query = """DELETE FROM tasks WHERE titulo = %s AND nickname = %s"""
+        cursor.execute(query, (titulo, nickname))
+        conn.commit()
+        conn.close()
+
+        return True, None
+    
+    except Exception as err:
+        return False, err
+
+def get_task(titulo, nickname):
+
+    try:
+        conn = utils.connect_database()
+        cursor = conn.cursor()
+        query = """SELECT * FROM tasks WHERE titulo = %s AND nickname = %s"""
+        cursor.execute(query, (titulo, nickname))
+        task = cursor.fetchone()
+
+        conn.close()
+        
+        if task:
+            return True, task
+        else:
+            return False, "Task não encontrada"
+
+    except Exception as err:
+        return False, err
+
+def get_tasks(nickname):
+
+    try:
+        conn = utils.connect_database()
+        cursor = conn.cursor()
+        query = """SELECT * FROM tasks WHERE nickname = %s"""
+        cursor.execute(query, (nickname, ))
+        task = cursor.fetchall()
+
+        conn.close()
+        
+        if task:
+            return True, task
+        else:
+            return False, "Tasks não encontradas"
+
+    except Exception as err:
+        return False, err
+
+def update_task(nickname, titulo, data):
+    try:
+        conn = utils.connect_database()
+        cursor = conn.cursor()
+
+        exist, err = get_task(titulo, nickname)
+        if not exist:
+            return False, "Task não encontrada"
+
+        update_fields = ", ".join([f"{key} = %s" for key in data.keys()])
+        query = f"""UPDATE tasks SET {update_fields} WHERE nickname = %s AND titulo = %s"""
+
+        
+        values = list(data.values())
+        values.append(nickname)
+        values.append(titulo)
+
+        
+        cursor.execute(query, tuple(values))
+        conn.commit()
+        conn.close()
+
+        return True, None
+    
+    except Exception as err:
+        return False, err
+
+            
