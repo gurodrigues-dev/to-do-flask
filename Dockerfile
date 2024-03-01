@@ -12,4 +12,4 @@ RUN \
 
 COPY . .
 
-CMD ["python", "backend/src/routes.py"]
+CMD ["python", "routes.py"]
